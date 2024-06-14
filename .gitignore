@@ -1,0 +1,17 @@
+influx/influxdb2-config/*
+influx/influxdb2-data/*
+influx/.~lock*
+
+!influx/influxdb2-config/dummy.txt
+!influx/influxdb2-data/dummy.txt
+
+mosquitto/config/*
+mosquitto/data/*
+mosquitto/log/*
+
+!mosquitto/config/mosquitto.conf
+!mosquitto/config/dummy.txt
+!mosquitto/config/passwd_file
+
+!mosquitto/data/dummy.txt
+!mosquitto/log/dummy.txt

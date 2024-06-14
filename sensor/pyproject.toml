@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "sensor"
+version = "0.1.0"
+description = ""
+authors = ["Mihajlo Madic <mihajlo.madic@elfak.rs>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+paho-mqtt = "^2.1.0"
+influxdb-client = "^1.43.0"
+toml = "^0.10.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

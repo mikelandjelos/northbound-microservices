@@ -1,0 +1,125 @@
+networks:
+  est-bridge:
+    name: est_bridge
+
+secrets:
+  influx-token:
+    file: ./secrets/influx_token
+
+services:
+  # ---------------------------------------------------------------------------------------------------------
+  # MOCK DATA PROVIDER SERVICE - InfluxDB2
+  # ---------------------------------------------------------------------------------------------------------
+
+  influxdb:
+    image: influxdb:2
+    container_name: influxdb
+    ports:
+      - "8086:8086"
+    volumes:
+      - ${INFLUX_ROOT}/influxdb2-data:/var/lib/influxdb2
+      - ${INFLUX_ROOT}/influxdb2-config:/etc/influxdb2
+      - ${INFLUX_ROOT}/environmental_sensor_telemetry_data.csv:/environmental_sensor_telemetry_data.csv
+      - ${INFLUX_ROOT}/scripts:/docker-entrypoint-initdb.d
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=${USERNAME}
+      - DOCKER_INFLUXDB_INIT_PASSWORD=${PASSWORD}
+      - DOCKER_INFLUXDB_INIT_ORG=${ORG}
+      - DOCKER_INFLUXDB_INIT_BUCKET=${BUCKET}
+      - DOCKER_INFLUXDB_INIT_RETENTION=0
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN_FILE=/run/secrets/influx-token
+    networks:
+      - est-bridge
+    secrets:
+      - influx-token
+
+  # ---------------------------------------------------------------------------------------------------------
+  # MESSAGE BROKER SERVICE - ECLIPSE MOSQUITTO
+  # ---------------------------------------------------------------------------------------------------------
+
+  mosquitto-broker:
+    image: eclipse-mosquitto:2
+    container_name: mosquitto-broker
+    volumes:
+      - ${MOSQUITTO_ROOT}/config:/mosquitto/config:ro
+    ports:
+      - "1883:1883" # MQTT
+      - "9001:9001" # WebSockets
+    stdin_open: true
+    tty: true
+    networks:
+      - est-bridge
+
+  # ---------------------------------------------------------------------------------------------------------
+  # MOCK SENSOR SERVICES - PYTHON
+  # ---------------------------------------------------------------------------------------------------------
+
+  first-sensor:
+    image: est-sensor
+    container_name: first-sensor
+    environment:
+      - INFLUXDB_URL=${INFLUXDB_URL}
+      - INFLUXDB_ORG=${ORG}
+      - INFLUXDB_BUCKET=${BUCKET}
+      - DEVICE_MAC_ADDR=${FIRST_SENSOR_MAC_ADDR}
+      - MQTT_BROKER_HOST=${MOSQUITTO_HOST}
+      - MQTT_BROKER_PORT=${MOSQUITTO_PORT}
+    depends_on:
+      - mosquitto-broker
+      - influxdb
+    networks:
+      - est-bridge
+    secrets:
+      - influx-token
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 1s
+        max_attempts: 5
+
+  second-sensor:
+    image: est-sensor
+    container_name: second-sensor
+    environment:
+      - INFLUXDB_URL=${INFLUXDB_URL}
+      - INFLUXDB_ORG=${ORG}
+      - INFLUXDB_BUCKET=${BUCKET}
+      - DEVICE_MAC_ADDR=${SECOND_SENSOR_MAC_ADDR}
+      - MQTT_BROKER_HOST=${MOSQUITTO_HOST}
+      - MQTT_BROKER_PORT=${MOSQUITTO_PORT}
+    depends_on:
+      - mosquitto-broker
+      - influxdb
+    networks:
+      - est-bridge
+    secrets:
+      - influx-token
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 1s
+        max_attempts: 5
+
+  third-sensor:
+    image: est-sensor
+    container_name: third-sensor
+    environment:
+      - INFLUXDB_URL=${INFLUXDB_URL}
+      - INFLUXDB_ORG=${ORG}
+      - INFLUXDB_BUCKET=${BUCKET}
+      - DEVICE_MAC_ADDR=${THIRD_SENSOR_MAC_ADDR}
+      - MQTT_BROKER_HOST=${MOSQUITTO_HOST}
+      - MQTT_BROKER_PORT=${MOSQUITTO_PORT}
+    depends_on:
+      - mosquitto-broker
+      - influxdb
+    networks:
+      - est-bridge
+    secrets:
+      - influx-token
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 1s
+        max_attempts: 5
