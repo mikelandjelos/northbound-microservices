@@ -1,4 +1,4 @@
-# Environmental sensor telemetry - EDA edge analytics
+# Environmental sensor telemetry - Northbound infrastructure
 
 - [InfluxDB2 setup](./influx/README.md)
 - [MQTT broker](./mosquitto/README.md)
