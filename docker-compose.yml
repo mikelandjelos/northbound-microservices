@@ -38,9 +38,9 @@ services:
   # MESSAGE BROKER SERVICE - ECLIPSE MOSQUITTO
   # ---------------------------------------------------------------------------------------------------------
 
-  mosquitto-broker:
+  mqtt-broker:
     image: eclipse-mosquitto:2
-    container_name: mosquitto-broker
+    container_name: mqtt-broker
     volumes:
       - ${MOSQUITTO_ROOT}/config:/mosquitto/config:ro
     ports:
@@ -66,7 +66,7 @@ services:
       - MQTT_BROKER_HOST=${MOSQUITTO_HOST}
       - MQTT_BROKER_PORT=${MOSQUITTO_PORT}
     depends_on:
-      - mosquitto-broker
+      - mqtt-broker
       - influxdb
     networks:
       - est-bridge
@@ -89,7 +89,7 @@ services:
       - MQTT_BROKER_HOST=${MOSQUITTO_HOST}
       - MQTT_BROKER_PORT=${MOSQUITTO_PORT}
     depends_on:
-      - mosquitto-broker
+      - mqtt-broker
       - influxdb
     networks:
       - est-bridge
@@ -112,12 +112,50 @@ services:
       - MQTT_BROKER_HOST=${MOSQUITTO_HOST}
       - MQTT_BROKER_PORT=${MOSQUITTO_PORT}
     depends_on:
-      - mosquitto-broker
+      - mqtt-broker
       - influxdb
     networks:
       - est-bridge
     secrets:
       - influx-token
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 1s
+        max_attempts: 5
+
+  # ---------------------------------------------------------------------------------------------------------
+  # NATS SERVER
+  # ---------------------------------------------------------------------------------------------------------
+
+  nats-server:
+    image: nats
+    container_name: nats-server
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    command: ["--http_port", "8222"]
+    networks:
+      - est-bridge
+
+  # ---------------------------------------------------------------------------------------------------------
+  # FILTER SERVICE - NODEJS
+  # ---------------------------------------------------------------------------------------------------------
+
+  filter:
+    image: est-filter
+    container_name: filter
+    environment:
+      - MQTT_BROKER_HOST=${MOSQUITTO_HOST}
+      - MQTT_BROKER_PORT=${MOSQUITTO_PORT}
+      - WINDOW_SIZE=100
+      - NATS_HOST=${NATS_HOST}
+      - NATS_PORT=${NATS_PORT}
+    depends_on:
+      - mqtt-broker
+      - nats-server
+    networks:
+      - est-bridge
     deploy:
       restart_policy:
         condition: on-failure
