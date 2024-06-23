@@ -210,3 +210,28 @@ services:
         condition: on-failure
         delay: 1s
         max_attempts: 5
+
+  # ---------------------------------------------------------------------------------------------------------
+  # DASHBOARD SERVICE - JAVA
+  # ---------------------------------------------------------------------------------------------------------
+
+  grafana:
+    container_name: grafana
+    image: grafana/grafana:latest
+    ports:
+      - 3000:3000
+    volumes:
+      - ./grafana/config/grafana.ini:/etc/grafana/grafana.ini:ro
+      - ./grafana/provisioning:/etc/grafana/provisioning/
+    environment:
+      - INFLUXDB_URL=${INFLUXDB_STATISTICS_URL}
+      - INFLUXDB_ORG=${INFLUXDB_ORG}
+      - INFLUXDB_BUCKET=${INFLUXDB_BUCKET}
+      - GF_INFLUXDB_TOKEN__FILE=${INFLUXDB_TOKEN_FILE}
+      - GF_LOG_LEVEL=debug
+    networks:
+      - est-bridge
+    secrets:
+      - influx-token
+    depends_on:
+      - influx-statistics
