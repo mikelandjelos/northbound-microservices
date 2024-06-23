@@ -1,9 +1,9 @@
-influx/influxdb2-config/*
-influx/influxdb2-data/*
-influx/.~lock*
+influx-mock/influxdb2-config/*
+influx-mock/influxdb2-data/*
+influx-mock/.~lock*
 
-!influx/influxdb2-config/dummy.txt
-!influx/influxdb2-data/dummy.txt
+!influx-mock/influxdb2-config/dummy.txt
+!influx-mock/influxdb2-data/dummy.txt
 
 mosquitto/config/*
 mosquitto/data/*
@@ -15,3 +15,11 @@ mosquitto/log/*
 
 !mosquitto/data/dummy.txt
 !mosquitto/log/dummy.txt
+
+.vscode/*
+
+# Local History for Visual Studio Code
+.history/
+
+# Built Visual Studio Code Extensions
+*.vsix
