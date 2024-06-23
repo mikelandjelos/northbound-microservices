@@ -240,18 +240,18 @@ services:
   # RULE ENGINE SERVICE - EKUIPER
   # ---------------------------------------------------------------------------------------------------------
 
-  # ekuiper-manager:
-  #   image: emqx/ekuiper-manager:latest
-  #   container_name: ekuiper-manager
-  #   environment:
-  #     DEFAULT_EKUIPER_ENDPOINT: "http://ekuiper:${DEFAULT_EKUIPER_PORT}"
-  #   ports:
-  #     - "${EKUIPER_MANAGER_PORT}:9082"
-  #   depends_on:
-  #     - mqtt-broker
-  #     - filter
-  #   networks:
-  #     - est-bridge
+  ekuiper-manager:
+    image: emqx/ekuiper-manager:latest
+    container_name: ekuiper-manager
+    environment:
+      DEFAULT_EKUIPER_ENDPOINT: "http://ekuiper:${DEFAULT_EKUIPER_PORT}"
+    ports:
+      - "${EKUIPER_MANAGER_PORT}:9082"
+    depends_on:
+      - mqtt-broker
+      - filter
+    networks:
+      - est-bridge
 
   ekuiper:
     image: lfedge/ekuiper:latest
