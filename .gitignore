@@ -23,3 +23,10 @@ mosquitto/log/*
 
 # Built Visual Studio Code Extensions
 *.vsix
+
+ekuiper/data/*
+!ekuiper/data/dummy.txt
+!ekuiper/data/init.json
+
+ekuiper/log/*
+!ekuiper/log/dummy.txt

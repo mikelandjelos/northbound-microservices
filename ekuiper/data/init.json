@@ -1,0 +1,9 @@
+{
+  "streams": {
+    "measurements_stream": "\n              CREATE STREAM measurements_stream\n              ()\n              WITH (DATASOURCE=\"sensor/measurements/#\", FORMAT=\"json\", TYPE=\"mqtt\", SHARED=\"false\", TIMESTAMP=\"_time\", TIMESTAMP_FORMAT=\"ISO8601\", );\n          "
+  },
+  "tables": {},
+  "rules": {
+    "avg_temp_greater_than_30": "{\"id\":\"avg_temp_greater_than_30\",\"name\":\"A query with averages of given measurements where temperature is greater than 30. \",\"triggered\":true,\"sql\":\"SELECT device,\\n    avg(carbon_oxide) AS avg_carbon_oxide,\\n    avg(humidity) AS avg_humidity,\\n    avg(liquid_petroleum_gas) AS avg_liquid_petroleum_gas,\\n    avg(smoke) AS avg_smoke,\\n    avg(temperature) AS avg_temperature\\nFROM measurements_stream\\nGROUP BY device,\\n    TUMBLINGWINDOW(ss, 5)\\nHAVING avg_temperature > 20;\",\"actions\":[{\"mqtt\":{\"server\":\"mqtt://mqtt-broker:1883\",\"topic\":\"sensor/measurements/avg_temp_gt_than_30/{{.device}}\",\"omitIfEmpty\":false,\"sendSingle\":true,\"format\":\"json\",\"bufferLength\":1024,\"enableCache\":false,\"runAsync\":false}}],\"options\":{\"debug\":false,\"logFilename\":\"\",\"isEventTime\":false,\"lateTolerance\":1000,\"concurrency\":1,\"bufferLength\":1024,\"sendMetaToSink\":false,\"sendError\":true,\"qos\":0,\"checkpointInterval\":300000,\"cron\":\"\",\"duration\":\"\",\"cronDatetimeRange\":null,\"restartStrategy\":{\"attempts\":0,\"delay\":1000,\"multiplier\":2,\"maxDelay\":30000,\"jitterFactor\":0.1}}}"
+  }
+}

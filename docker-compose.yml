@@ -235,3 +235,42 @@ services:
       - influx-token
     depends_on:
       - influx-statistics
+
+  # ---------------------------------------------------------------------------------------------------------
+  # RULE ENGINE SERVICE - EKUIPER
+  # ---------------------------------------------------------------------------------------------------------
+
+  # ekuiper-manager:
+  #   image: emqx/ekuiper-manager:latest
+  #   container_name: ekuiper-manager
+  #   environment:
+  #     DEFAULT_EKUIPER_ENDPOINT: "http://ekuiper:${DEFAULT_EKUIPER_PORT}"
+  #   ports:
+  #     - "${EKUIPER_MANAGER_PORT}:9082"
+  #   depends_on:
+  #     - mqtt-broker
+  #     - filter
+  #   networks:
+  #     - est-bridge
+
+  ekuiper:
+    image: lfedge/ekuiper:latest
+    container_name: ekuiper
+    hostname: ekuiper
+    user: root
+    volumes:
+      - ${EKUIPER_ROOT}/data/init.json:/kuiper/data/init.json:ro
+      # - ${EKUIPER_ROOT}/data/:/kuiper/data/
+      # - ${EKUIPER_ROOT}/log:/kuiper/log
+    environment:
+      MQTT_SOURCE__DEFAULT__SERVER: "mqtt://${MOSQUITTO_HOST}:${MOSQUITTO_PORT}"
+      KUIPER__BASIC__CONSOLELOG: "true"
+      KUIPER__BASIC__IGNORECASE: "false"
+    ports:
+      - "9081:9081"
+      - "127.0.0.1:20498:20498"
+    depends_on:
+      - mqtt-broker
+      - filter
+    networks:
+      - est-bridge
