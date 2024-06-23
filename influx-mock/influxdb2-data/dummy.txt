@@ -1,0 +1,1 @@
+This is a dummy file. Its only purpose is to make the influxdb2-data directory visible by git.

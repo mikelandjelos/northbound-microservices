@@ -8,27 +8,27 @@ secrets:
 
 services:
   # ---------------------------------------------------------------------------------------------------------
-  # MOCK DATA PROVIDER SERVICE - InfluxDB2
+  # MOCK DATA PROVIDER SERVICE - INFLUXDB2
   # ---------------------------------------------------------------------------------------------------------
 
-  influxdb:
+  influx-mock:
     image: influxdb:2
-    container_name: influxdb
+    container_name: influx-mock
     ports:
-      - "8086:8086"
+      - "${INFLUXDB_MOCK_PORT}:8086"
     volumes:
-      - ${INFLUX_ROOT}/influxdb2-data:/var/lib/influxdb2
-      - ${INFLUX_ROOT}/influxdb2-config:/etc/influxdb2
-      - ${INFLUX_ROOT}/environmental_sensor_telemetry_data.csv:/environmental_sensor_telemetry_data.csv
-      - ${INFLUX_ROOT}/scripts:/docker-entrypoint-initdb.d
+      - ${INFLUXDB_MOCK_ROOT}/influxdb2-data:/var/lib/influxdb2
+      - ${INFLUXDB_MOCK_ROOT}/influxdb2-config:/etc/influxdb2
+      - ${INFLUXDB_MOCK_ROOT}/environmental_sensor_telemetry_data.csv:/environmental_sensor_telemetry_data.csv
+      - ${INFLUXDB_MOCK_ROOT}/scripts:/docker-entrypoint-initdb.d
     environment:
       - DOCKER_INFLUXDB_INIT_MODE=setup
-      - DOCKER_INFLUXDB_INIT_USERNAME=${USERNAME}
-      - DOCKER_INFLUXDB_INIT_PASSWORD=${PASSWORD}
-      - DOCKER_INFLUXDB_INIT_ORG=${ORG}
-      - DOCKER_INFLUXDB_INIT_BUCKET=${BUCKET}
+      - DOCKER_INFLUXDB_INIT_USERNAME=${INFLUXDB_USERNAME}
+      - DOCKER_INFLUXDB_INIT_PASSWORD=${INFLUXDB_PASSWORD}
+      - DOCKER_INFLUXDB_INIT_ORG=${INFLUXDB_ORG}
+      - DOCKER_INFLUXDB_INIT_BUCKET=${INFLUXDB_BUCKET}
       - DOCKER_INFLUXDB_INIT_RETENTION=0
-      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN_FILE=/run/secrets/influx-token
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN_FILE=${INFLUXDB_TOKEN_FILE}
     networks:
       - est-bridge
     secrets:
@@ -59,15 +59,15 @@ services:
     image: est-sensor
     container_name: first-sensor
     environment:
-      - INFLUXDB_URL=${INFLUXDB_URL}
-      - INFLUXDB_ORG=${ORG}
-      - INFLUXDB_BUCKET=${BUCKET}
+      - INFLUXDB_URL=${INFLUXDB_MOCK_URL}
+      - INFLUXDB_ORG=${INFLUXDB_ORG}
+      - INFLUXDB_BUCKET=${INFLUXDB_BUCKET}
       - DEVICE_MAC_ADDR=${FIRST_SENSOR_MAC_ADDR}
       - MQTT_BROKER_HOST=${MOSQUITTO_HOST}
       - MQTT_BROKER_PORT=${MOSQUITTO_PORT}
     depends_on:
       - mqtt-broker
-      - influxdb
+      - influx-mock
     networks:
       - est-bridge
     secrets:
@@ -82,15 +82,15 @@ services:
     image: est-sensor
     container_name: second-sensor
     environment:
-      - INFLUXDB_URL=${INFLUXDB_URL}
-      - INFLUXDB_ORG=${ORG}
-      - INFLUXDB_BUCKET=${BUCKET}
+      - INFLUXDB_URL=${INFLUXDB_MOCK_URL}
+      - INFLUXDB_ORG=${INFLUXDB_ORG}
+      - INFLUXDB_BUCKET=${INFLUXDB_BUCKET}
       - DEVICE_MAC_ADDR=${SECOND_SENSOR_MAC_ADDR}
       - MQTT_BROKER_HOST=${MOSQUITTO_HOST}
       - MQTT_BROKER_PORT=${MOSQUITTO_PORT}
     depends_on:
       - mqtt-broker
-      - influxdb
+      - influx-mock
     networks:
       - est-bridge
     secrets:
@@ -105,15 +105,15 @@ services:
     image: est-sensor
     container_name: third-sensor
     environment:
-      - INFLUXDB_URL=${INFLUXDB_URL}
-      - INFLUXDB_ORG=${ORG}
-      - INFLUXDB_BUCKET=${BUCKET}
+      - INFLUXDB_URL=${INFLUXDB_MOCK_URL}
+      - INFLUXDB_ORG=${INFLUXDB_ORG}
+      - INFLUXDB_BUCKET=${INFLUXDB_BUCKET}
       - DEVICE_MAC_ADDR=${THIRD_SENSOR_MAC_ADDR}
       - MQTT_BROKER_HOST=${MOSQUITTO_HOST}
       - MQTT_BROKER_PORT=${MOSQUITTO_PORT}
     depends_on:
       - mqtt-broker
-      - influxdb
+      - influx-mock
     networks:
       - est-bridge
     secrets:
@@ -156,6 +156,55 @@ services:
       - nats-server
     networks:
       - est-bridge
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 1s
+        max_attempts: 5
+
+  # ---------------------------------------------------------------------------------------------------------
+  # TIMESERIES DATABASE - INFLUXDB2
+  # ---------------------------------------------------------------------------------------------------------
+
+  influx-statistics:
+    image: influxdb:2
+    container_name: influx-statistics
+    ports:
+      - "${INFLUXDB_STATISTICS_PORT}:8086"
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=${INFLUXDB_USERNAME}
+      - DOCKER_INFLUXDB_INIT_PASSWORD=${INFLUXDB_PASSWORD}
+      - DOCKER_INFLUXDB_INIT_ORG=${INFLUXDB_ORG}
+      - DOCKER_INFLUXDB_INIT_BUCKET=${INFLUXDB_BUCKET}
+      - DOCKER_INFLUXDB_INIT_RETENTION=0
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN_FILE=${INFLUXDB_TOKEN_FILE}
+    networks:
+      - est-bridge
+    secrets:
+      - influx-token
+
+  # ---------------------------------------------------------------------------------------------------------
+  # DASHBOARD SERVICE - JAVA
+  # ---------------------------------------------------------------------------------------------------------
+
+  dashboard:
+    image: est-dashboard
+    container_name: dashboard
+    environment:
+      - NATS_URI=nats://${NATS_HOST}:${NATS_PORT}
+      - INFLUXDB_URL=${INFLUXDB_STATISTICS_URL}
+      - INFLUXDB_TOKEN_FILE=${INFLUXDB_TOKEN_FILE}
+      - INFLUXDB_ORG=${INFLUXDB_ORG}
+      - INFLUXDB_BUCKET=${INFLUXDB_BUCKET}
+    depends_on:
+      - filter
+      - nats-server
+      - influx-statistics
+    networks:
+      - est-bridge
+    secrets:
+      - influx-token
     deploy:
       restart_policy:
         condition: on-failure
