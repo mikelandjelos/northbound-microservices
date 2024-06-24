@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WebSocket Client</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        padding: 0;
+      }
+
+      h1 {
+        font-size: 24px;
+        margin-bottom: 20px;
+      }
+
+      input[type="text"],
+      button {
+        padding: 5px 10px;
+        margin-right: 10px;
+      }
+
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        margin-top: 20px;
+      }
+
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+      }
+
+      th {
+        background-color: #f2f2f2;
+      }
+
+      tr:nth-child(even) {
+        background-color: #f9f9f9;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>WebSocket Client</h1>
+    <input type="text" id="topic" placeholder="Enter topic" />
+    <button onclick="subscribe()">Subscribe</button>
+    <table id="data-table">
+      <thead>
+        <tr>
+          <th>Device</th>
+          <th>Avg CO</th>
+          <th>Avg Humidity</th>
+          <th>Avg LPG</th>
+          <th>Avg Smoke</th>
+          <th>Avg Temperature</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Rows will be added here -->
+      </tbody>
+    </table>
+
+    <script src="bundle.js"></script>
+  </body>
+</html>

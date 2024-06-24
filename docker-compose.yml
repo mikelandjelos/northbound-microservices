@@ -297,3 +297,19 @@ services:
         condition: on-failure
         delay: 1s
         max_attempts: 5
+
+  # ---------------------------------------------------------------------------------------------------------
+  # WS CLIENT SERVICE - NODEJS WEBPACK
+  # ---------------------------------------------------------------------------------------------------------
+
+  ws-client:
+    image: est-ws-client
+    container_name: ws-client
+    environment:
+      - WS_ENDPOINT=${WS_ENDPOINT}
+    ports:
+      - "9090:9090"
+    depends_on:
+      - command
+    networks:
+      - est-bridge
