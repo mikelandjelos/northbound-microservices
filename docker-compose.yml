@@ -274,3 +274,26 @@ services:
       - filter
     networks:
       - est-bridge
+
+  # ---------------------------------------------------------------------------------------------------------
+  # RULE ENGINE SERVICE - EKUIPER
+  # ---------------------------------------------------------------------------------------------------------
+
+  command:
+    image: est-command
+    container_name: command
+    environment:
+      - MQTT_BROKER_HOST=${MOSQUITTO_HOST}
+      - MQTT_BROKER_PORT=${MOSQUITTO_PORT}
+      - BASE_TOPIC=${DATA_SINK_TOPIC}
+    ports:
+      - "8080:8080" # WebSockets
+    depends_on:
+      - ekuiper
+    networks:
+      - est-bridge
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 1s
+        max_attempts: 5
