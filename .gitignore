@@ -30,3 +30,5 @@ ekuiper/data/*
 
 ekuiper/log/*
 !ekuiper/log/dummy.txt
+
+.jython_cache/
